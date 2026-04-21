@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BiblioCore</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --gold:#f0c040;--dark:#0d0d1a;--card:#1a1a2e;--accent:#e94560;
+    --green:#00d4aa;--blue:#4fc3f7;--shelf:#5c3d1e;--wood:#8b5e3c;
+  }
+  body{background:var(--dark);color:#fff;font-family:'Segoe UI',sans-serif;overflow-x:hidden;}
+
+  /* ── NAVBAR ── */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;
+    background:rgba(13,13,26,.95);backdrop-filter:blur(10px);
+    border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:100;}
+  .logo{font-size:1.5rem;font-weight:700;color:var(--gold);letter-spacing:2px;}
+  .logo span{color:#fff;}
+  nav ul{list-style:none;display:flex;gap:28px;}
+  nav ul li a{color:#ccc;text-decoration:none;font-size:.95rem;transition:.3s;}
+  nav ul li a:hover{color:var(--gold);}
+
+  /* ── HERO ── */
+  .hero{position:relative;min-height:100vh;display:flex;align-items:center;
+    justify-content:center;flex-direction:column;overflow:hidden;
+    background:radial-gradient(ellipse at 50% 0%,#1a0a3a 0%,var(--dark) 70%);}
+
+  /* floating particles */
+  .particles{position:absolute;inset:0;pointer-events:none;}
+  .particle{position:absolute;border-radius:50%;animation:float linear infinite;opacity:.4;}
+  @keyframes float{0%{transform:translateY(100vh) rotate(0deg);opacity:0;}
+    10%{opacity:.4;}90%{opacity:.4;}100%{transform:translateY(-10vh) rotate(720deg);opacity:0;}}
+
+  .hero-text{text-align:center;z-index:2;}
+  .hero-text h1{font-size:3.5rem;font-weight:800;line-height:1.1;
+    background:linear-gradient(135deg,var(--gold),#ff8c42,var(--accent));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    animation:fadeDown .8s ease;}
+  .hero-text p{margin-top:16px;font-size:1.15rem;color:#aaa;animation:fadeDown 1s ease;}
+  .hero-btns{margin-top:32px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+  .btn{padding:13px 32px;border-radius:30px;border:none;cursor:pointer;
+    font-size:1rem;font-weight:600;transition:.3s;text-decoration:none;}
+  .btn-primary{background:linear-gradient(135deg,var(--gold),#ff8c42);color:#000;}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(240,192,64,.4);}
+  .btn-outline{background:transparent;border:2px solid var(--gold);color:var(--gold);}
+  .btn-outline:hover{background:var(--gold);color:#000;transform:translateY(-3px);}
+
+  @keyframes fadeDown{from{opacity:0;transform:translateY(-30px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ── BOOKSHELF ── */
+  .shelf-section{padding:60px 40px 20px;text-align:center;}
+  .shelf-section h2{font-size:2rem;color:var(--gold);margin-bottom:40px;}
+
+  .bookshelf{position:relative;display:flex;flex-direction:column;gap:0;
+    max-width:900px;margin:0 auto;}
+  .shelf-row{position:relative;display:flex;align-items:flex-end;
+    gap:4px;padding:10px 20px 0;
+    background:linear-gradient(180deg,transparent 90%,var(--wood) 90%,#6b4423 100%);
+    border-radius:4px;min-height:130px;}
+  .shelf-row::after{content:'';position:absolute;bottom:-6px;left:0;right:0;
+    height:6px;background:var(--shelf);border-radius:0 0 4px 4px;
+    box-shadow:0 4px 12px rgba(0,0,0,.5);}
+
+  /* ── BOOK ── */
+  .book{position:relative;width:52px;height:100px;border-radius:3px 6px 6px 3px;
+    cursor:pointer;transform-origin:bottom center;
+    transition:transform .35s cubic-bezier(.34,1.56,.64,1),box-shadow .35s;
+    animation:bookDrop .6s ease both;}
+  .book:hover{transform:translateY(-22px) rotate(-3deg);
+    box-shadow:6px 0 20px rgba(0,0,0,.6);}
+  .book-spine{width:100%;height:100%;border-radius:3px 6px 6px 3px;
+    display:flex;align-items:center;justify-content:center;
+    writing-mode:vertical-rl;text-orientation:mixed;
+    font-size:.55rem;font-weight:700;color:rgba(255,255,255,.85);
+    padding:6px 4px;letter-spacing:1px;text-transform:uppercase;
+    border-left:4px solid rgba(0,0,0,.25);}
+  .book-pages{position:absolute;right:-3px;top:4px;bottom:4px;width:5px;
+    background:repeating-linear-gradient(#f5f0e8 0px,#f5f0e8 1px,#ddd 1px,#ddd 2px);
+    border-radius:0 2px 2px 0;}
+  .book-top{position:absolute;top:-3px;left:4px;right:0;height:5px;
+    background:rgba(255,255,255,.15);border-radius:2px 4px 0 0;}
+
+  @keyframes bookDrop{from{transform:translateY(-60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+  /* book colors */
+  .bc0{background:linear-gradient(160deg,#c0392b,#922b21);}
+  .bc1{background:linear-gradient(160deg,#1a5276,#154360);}
+  .bc2{background:linear-gradient(160deg,#1e8449,#145a32);}
+  .bc3{background:linear-gradient(160deg,#7d3c98,#6c3483);}
+  .bc4{background:linear-gradient(160deg,#d35400,#a04000);}
+  .bc5{background:linear-gradient(160deg,#2e86c1,#1a5276);}
+  .bc6{background:linear-gradient(160deg,#b7950b,#9a7d0a);}
+  .bc7{background:linear-gradient(160deg,#117a65,#0e6655);}
+  .bc8{background:linear-gradient(160deg,#943126,#7b241c);}
+  .bc9{background:linear-gradient(160deg,#4a235a,#3b1a4a);}
+
+  /* ── STATS ── */
+  .stats{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;padding:50px 40px;}
+  .stat-card{background:var(--card);border:1px solid rgba(240,192,64,.2);
+    border-radius:16px;padding:30px 40px;text-align:center;min-width:160px;
+    transition:.3s;animation:fadeUp .6s ease both;}
+  .stat-card:hover{border-color:var(--gold);transform:translateY(-6px);
+    box-shadow:0 12px 30px rgba(240,192,64,.15);}
+  .stat-card .num{font-size:2.8rem;font-weight:800;color:var(--gold);}
+  .stat-card .lbl{font-size:.85rem;color:#888;margin-top:4px;text-transform:uppercase;letter-spacing:1px;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ── SECTIONS ── */
+  .section{padding:50px 40px;max-width:1100px;margin:0 auto;}
+  .section h2{font-size:1.8rem;color:var(--gold);margin-bottom:28px;
+    border-left:4px solid var(--gold);padding-left:14px;}
+
+  /* ── FORMS ── */
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
+  .form-card{background:var(--card);border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;padding:28px;transition:.3s;}
+  .form-card:hover{border-color:rgba(240,192,64,.3);}
+  .form-card h3{color:var(--gold);margin-bottom:18px;font-size:1.1rem;}
+  .form-card input{width:100%;padding:11px 14px;margin-bottom:12px;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+    border-radius:8px;color:#fff;font-size:.9rem;outline:none;transition:.3s;}
+  .form-card input:focus{border-color:var(--gold);background:rgba(240,192,64,.06);}
+  .form-card input::placeholder{color:#555;}
+  .form-card .btn{width:100%;border-radius:8px;padding:11px;}
+
+  /* ── TABLE ── */
+  .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,.08);}
+  table{width:100%;border-collapse:collapse;}
+  thead{background:rgba(240,192,64,.12);}
+  th{padding:14px 16px;text-align:left;color:var(--gold);font-size:.85rem;
+    text-transform:uppercase;letter-spacing:1px;}
+  td{padding:13px 16px;border-top:1px solid rgba(255,255,255,.05);font-size:.9rem;color:#ccc;}
+  tr:hover td{background:rgba(255,255,255,.03);}
+  .badge{padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600;}
+  .badge-green{background:rgba(0,212,170,.15);color:var(--green);}
+  .badge-red{background:rgba(233,69,96,.15);color:var(--accent);}
+
+  /* ── SEARCH BAR ── */
+  .search-bar{display:flex;gap:12px;margin-bottom:24px;}
+  .search-bar input{flex:1;padding:12px 18px;background:var(--card);
+    border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;
+    font-size:.95rem;outline:none;transition:.3s;}
+  .search-bar input:focus{border-color:var(--gold);}
+  .search-bar .btn{border-radius:10px;padding:12px 24px;}
+
+  /* ── TOAST ── */
+  #toast{position:fixed;bottom:30px;right:30px;padding:14px 24px;
+    border-radius:10px;font-size:.9rem;font-weight:600;z-index:999;
+    transform:translateY(80px);opacity:0;transition:.4s;pointer-events:none;}
+  #toast.show{transform:translateY(0);opacity:1;}
+  #toast.success{background:#00d4aa;color:#000;}
+  #toast.error{background:var(--accent);color:#fff;}
+
+  /* ── FOOTER ── */
+  footer{text-align:center;padding:30px;color:#444;font-size:.85rem;
+    border-top:1px solid rgba(255,255,255,.06);}
+
+  /* ── TABS ── */
+  .tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+  .tab{padding:9px 22px;border-radius:8px;border:1px solid rgba(255,255,255,.1);
+    background:transparent;color:#888;cursor:pointer;font-size:.9rem;transition:.3s;}
+  .tab.active,.tab:hover{background:var(--gold);color:#000;border-color:var(--gold);font-weight:600;}
+
+  @media(max-width:600px){
+    .hero-text h1{font-size:2.2rem;}
+    nav ul{display:none;}
+    .stats{gap:14px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">BiblioCore</div>
+  <ul>
+    <li><a href="#home">Home</a></li>
+    <li><a href="#books">Books</a></li>
+    <li><a href="#users">Users</a></li>
+    <li><a href="#manage">Manage</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <canvas class="particles" id="particles"></canvas>
+  <div class="hero-text">
+    <h1>BiblioCore<br/>Library Management</h1>
+    <p>Professional library management system for modern institutions</p>
+    <div class="hero-btns">
+      <a href="#books" class="btn btn-primary">Browse Books</a>
+      <a href="#manage" class="btn btn-outline">Add Book</a>
+    </div>
+  </div>
+</section>
+
+<!-- BOOKSHELF -->
+<div class="shelf-section">
+  <h2>Our Collection</h2>
+  <div class="bookshelf" id="bookshelf"></div>
+</div>
+
+<!-- STATS -->
+<div class="stats" id="stats">
+  <div class="stat-card" style="animation-delay:.1s"><div class="num" id="s-total">0</div><div class="lbl">Total Books</div></div>
+  <div class="stat-card" style="animation-delay:.2s"><div class="num" id="s-avail">0</div><div class="lbl">Available</div></div>
+  <div class="stat-card" style="animation-delay:.3s"><div class="num" id="s-issued">0</div><div class="lbl">Issued</div></div>
+  <div class="stat-card" style="animation-delay:.4s"><div class="num" id="s-users">0</div><div class="lbl">Members</div></div>
+</div>
+
+<!-- BOOKS SECTION -->
+<div class="section" id="books">
+  <h2>Book Catalog</h2>
+  <div class="search-bar">
+    <input id="searchInput" placeholder="Search by title, author or ID…" oninput="renderBooks()"/>
+    <button class="btn btn-primary" onclick="renderBooks()">Search</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="filterBooks('all',this)">All</button>
+    <button class="tab" onclick="filterBooks('available',this)">Available</button>
+    <button class="tab" onclick="filterBooks('issued',this)">Issued</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Title</th><th>Author</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="bookTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- USERS SECTION -->
+<div class="section" id="users">
+  <h2>Library Members</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Books Issued</th></tr></thead>
+      <tbody id="userTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MANAGE SECTION -->
+<div class="section" id="manage">
+  <h2>Management Panel</h2>
+  <div class="form-grid">
+
+    <!-- Add Book -->
+    <div class="form-card">
+      <h3>Add Book</h3>
+      <input id="ab-id" placeholder="Book ID"/>
+      <input id="ab-title" placeholder="Title"/>
+      <input id="ab-author" placeholder="Author"/>
+      <button class="btn btn-primary" onclick="addBook()">Add Book</button>
+    </div>
+
+    <!-- Issue Book -->
+    <div class="form-card">
+      <h3>Issue Book</h3>
+      <input id="ib-bid" placeholder="Book ID"/>
+      <input id="ib-uid" placeholder="User ID"/>
+      <button class="btn btn-primary" onclick="issueBook()">Issue Book</button>
+    </div>
+
+    <!-- Return Book -->
+    <div class="form-card">
+      <h3>Return Book</h3>
+      <input id="rb-bid" placeholder="Book ID"/>
+      <button class="btn btn-outline" onclick="returnBook()">Return Book</button>
+    </div>
+
+    <!-- Register User -->
+    <div class="form-card">
+      <h3>Register Member</h3>
+      <input id="au-id" placeholder="User ID"/>
+      <input id="au-name" placeholder="Full Name"/>
+      <input id="au-email" placeholder="Email"/>
+      <button class="btn btn-primary" onclick="addUser()">Register</button>
+    </div>
+
+  </div>
+</div>
+
+<footer>BiblioCore - Professional Library Management System</footer>
+<div id="toast"></div>
+
+<script>
+// ── DATA STORE ──────────────────────────────────────────────
+let books = JSON.parse(localStorage.getItem('lms_books')||'[]');
+let users = JSON.parse(localStorage.getItem('lms_users')||'[]');
+let bookFilter = 'all';
+
+function save(){
+  localStorage.setItem('lms_books',JSON.stringify(books));
+  localStorage.setItem('lms_users',JSON.stringify(users));
+}
+
+// ── SEED DATA (first load) ───────────────────────────────────
+if(!books.length){
+  const seed=[
+    {id:'B001',title:'The Great Gatsby',author:'F. Scott Fitzgerald',issued:false,issuedTo:''},
+    {id:'B002',title:'To Kill a Mockingbird',author:'Harper Lee',issued:false,issuedTo:''},
+    {id:'B003',title:'1984',author:'George Orwell',issued:true,issuedTo:'U001'},
+    {id:'B004',title:'Pride and Prejudice',author:'Jane Austen',issued:false,issuedTo:''},
+    {id:'B005',title:'The Catcher in the Rye',author:'J.D. Salinger',issued:false,issuedTo:''},
+    {id:'B006',title:'Brave New World',author:'Aldous Huxley',issued:true,issuedTo:'U002'},
+    {id:'B007',title:'The Hobbit',author:'J.R.R. Tolkien',issued:false,issuedTo:''},
+    {id:'B008',title:'Harry Potter',author:'J.K. Rowling',issued:false,issuedTo:''},
+    {id:'B009',title:'The Alchemist',author:'Paulo Coelho',issued:false,issuedTo:''},
+    {id:'B010',title:'Sapiens',author:'Yuval Noah Harari',issued:false,issuedTo:''},
+  ];
+  books=seed; save();
+}
+if(!users.length){
+  users=[
+    {id:'U001',name:'Alice Johnson',email:'alice@mail.com'},
+    {id:'U002',name:'Bob Smith',email:'bob@mail.com'},
+  ]; save();
+}
+
+// ── TOAST ───────────────────────────────────────────────────
+function toast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='show '+type;
+  setTimeout(()=>t.className='',2800);
+}
+
+// ── STATS ───────────────────────────────────────────────────
+function updateStats(){
+  const issued=books.filter(b=>b.issued).length;
+  animCount('s-total',books.length);
+  animCount('s-avail',books.length-issued);
+  animCount('s-issued',issued);
+  animCount('s-users',users.length);
+}
+function animCount(id,target){
+  const el=document.getElementById(id);
+  let n=0; const step=Math.ceil(target/30);
+  const t=setInterval(()=>{n=Math.min(n+step,target);el.textContent=n;if(n>=target)clearInterval(t);},40);
+}
+
+// ── BOOKSHELF ───────────────────────────────────────────────
+const titles=['Great Gatsby','Mockingbird','1984','Pride','Catcher','Brave New','Hobbit','Harry Potter','Alchemist','Sapiens','Dune','Odyssey','Hamlet','Dracula','Frankenstein','Moby Dick'];
+function buildShelf(){
+  const shelf=document.getElementById('bookshelf');
+  shelf.innerHTML='';
+  const rows=3, booksPerRow=Math.ceil(books.length/rows)||5;
+  const allBooks=[...books];
+  // pad with decorative books if fewer than 15
+  while(allBooks.length<15) allBooks.push({id:'X',title:titles[allBooks.length%titles.length],author:'',issued:false,issuedTo:''});
+  for(let r=0;r<rows;r++){
+    const row=document.createElement('div'); row.className='shelf-row';
+    const slice=allBooks.slice(r*5,(r+1)*5);
+    slice.forEach((b,i)=>{
+      const heights=[90,110,100,115,95,105,88,112,98,108];
+      const h=heights[(r*5+i)%heights.length];
+      const div=document.createElement('div');
+      div.className=`book bc${(r*5+i)%10}`;
+      div.style.height=h+'px';
+      div.style.animationDelay=(r*5+i)*.07+'s';
+      div.title=b.title+(b.issued?' [ISSUED]':'');
+      div.innerHTML=`<div class="book-spine">${b.title.substring(0,12)}</div><div class="book-pages"></div><div class="book-top"></div>`;
+      div.onclick=()=>{ document.getElementById('searchInput').value=b.title; filterBooks('all',document.querySelector('.tab')); renderBooks(); document.getElementById('books').scrollIntoView({behavior:'smooth'}); };
+      row.appendChild(div);
+    });
+    shelf.appendChild(row);
+  }
+}
+
+// ── BOOKS TABLE ─────────────────────────────────────────────
+function filterBooks(f,el){
+  bookFilter=f;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderBooks();
+}
+function renderBooks(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  let list=books.filter(b=>{
+    const match=b.title.toLowerCase().includes(q)||b.author.toLowerCase().includes(q)||b.id.toLowerCase().includes(q);
+    const filt=bookFilter==='all'||(bookFilter==='available'&&!b.issued)||(bookFilter==='issued'&&b.issued);
+    return match&&filt;
+  });
+  const tb=document.getElementById('bookTable');
+  tb.innerHTML=list.length?list.map(b=>`
+    <tr>
+      <td>${b.id}</td><td>${b.title}</td><td>${b.author}</td>
+      <td><span class="badge ${b.issued?'badge-red':'badge-green'}">${b.issued?'Issued to '+b.issuedTo:'Available'}</span></td>
+      <td><button class="btn btn-outline" style="padding:5px 14px;font-size:.8rem;border-radius:6px" onclick="quickReturn('${b.id}')" ${!b.issued?'disabled style="opacity:.3;cursor:default"':''}>Return</button></td>
+    </tr>`).join('')
+  :'<tr><td colspan="5" style="text-align:center;color:#555;padding:30px">No books found</td></tr>';
+}
+
+function quickReturn(id){
+  const b=books.find(x=>x.id===id);
+  if(!b||!b.issued){toast('Book not issued','error');return;}
+  b.issued=false; b.issuedTo=''; save(); refresh(); toast(`"${b.title}" returned ✓`);
+}
+
+// ── USERS TABLE ─────────────────────────────────────────────
+function renderUsers(){
+  const tb=document.getElementById('userTable');
+  tb.innerHTML=users.length?users.map(u=>{
+    const cnt=books.filter(b=>b.issuedTo===u.id).length;
+    return`<tr><td>${u.id}</td><td>${u.name}</td><td>${u.email}</td>
+      <td><span class="badge ${cnt?'badge-red':'badge-green'}">${cnt} book${cnt!==1?'s':''}</span></td></tr>`;
+  }).join(''):'<tr><td colspan="4" style="text-align:center;color:#555;padding:30px">No members yet</td></tr>';
+}
+
+// ── ACTIONS ─────────────────────────────────────────────────
+function addBook(){
+  const id=v('ab-id'),title=v('ab-title'),author=v('ab-author');
+  if(!id||!title||!author){toast('All fields required','error');return;}
+  if(books.find(b=>b.id===id)){toast('Book ID exists','error');return;}
+  books.push({id,title,author,issued:false,issuedTo:''});
+  save(); refresh(); toast(`"${title}" added ✓`);
+  ['ab-id','ab-title','ab-author'].forEach(x=>document.getElementById(x).value='');
+}
+function issueBook(){
+  const bid=v('ib-bid'),uid=v('ib-uid');
+  const b=books.find(x=>x.id===bid), u=users.find(x=>x.id===uid);
+  if(!b){toast('Book not found','error');return;}
+  if(!u){toast('User not found','error');return;}
+  if(b.issued){toast('Already issued to '+b.issuedTo,'error');return;}
+  b.issued=true; b.issuedTo=uid; save(); refresh();
+  toast(`"${b.title}" issued to ${u.name} ✓`);
+  ['ib-bid','ib-uid'].forEach(x=>document.getElementById(x).value='');
+}
+function returnBook(){
+  const bid=v('rb-bid');
+  const b=books.find(x=>x.id===bid);
+  if(!b){toast('Book not found','error');return;}
+  if(!b.issued){toast('Book not issued','error');return;}
+  b.issued=false; b.issuedTo=''; save(); refresh();
+  toast(`"${b.title}" returned ✓`);
+  document.getElementById('rb-bid').value='';
+}
+function addUser(){
+  const id=v('au-id'),name=v('au-name'),email=v('au-email');
+  if(!id||!name||!email){toast('All fields required','error');return;}
+  if(users.find(u=>u.id===id)){toast('User ID exists','error');return;}
+  users.push({id,name,email}); save(); refresh(); toast(`${name} registered ✓`);
+  ['au-id','au-name','au-email'].forEach(x=>document.getElementById(x).value='');
+}
+
+function v(id){return document.getElementById(id).value.trim();}
+function refresh(){updateStats();buildShelf();renderBooks();renderUsers();}
+
+// ── PARTICLE CANVAS ─────────────────────────────────────────
+(function(){
+  const c=document.getElementById('particles');
+  const ctx=c.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=c.width=c.offsetWidth;H=c.height=c.offsetHeight;}
+  window.addEventListener('resize',resize); resize();
+  for(let i=0;i<60;i++) pts.push({x:Math.random()*1200,y:Math.random()*800,r:Math.random()*2+.5,
+    vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,
+    color:`hsl(${Math.random()*60+30},80%,60%)`});
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;
+      if(p.y<0||p.y>H)p.vy*=-1;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.color; ctx.globalAlpha=.5; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── INIT ────────────────────────────────────────────────────
+refresh();
+</script>
+</body>
+</html>
